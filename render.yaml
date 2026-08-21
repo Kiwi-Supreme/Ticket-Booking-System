@@ -1,0 +1,71 @@
+# Render Blueprint — Ticket Booking System
+# ----------------------------------------------------------------------------
+# Provisions three resources: a managed PostgreSQL instance, the Express + Socket.io
+# API (a Node web service), and the React SPA (a static site).
+#
+# Deploy: push this repo to GitHub → Render Dashboard → "New +" → "Blueprint" →
+# pick the repo. Render reads this file and creates everything.
+#
+# ⚠️ Two env vars per service are cross-referenced between services, which is a
+# chicken-and-egg on the very first deploy. They are marked `sync: false`, i.e.
+# "I will set this in the dashboard." After the first deploy, copy each service's
+# public URL into the other and redeploy (see README → "Deploying to Render").
+# ----------------------------------------------------------------------------
+
+databases:
+  - name: ticketing-db
+    databaseName: ticketing
+    user: ticket
+    plan: free # NOTE: Render's free Postgres is deleted after ~30 days.
+
+services:
+  # --- REST API (Express + Socket.io + Prisma) ------------------------------
+  - type: web
+    name: ticketing-api
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run db:generate && npm run build -w @ticket/api
+    # Apply any pending migrations, then boot. `migrate deploy` is idempotent.
+    startCommand: npm run db:deploy && npm run start
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ticketing-db
+          property: connectionString
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true # Render generates a strong secret.
+      - key: HOLD_TTL_SECONDS
+        value: "600"
+      - key: WAITLIST_OFFER_TTL_SECONDS
+        value: "600"
+      - key: SWEEP_INTERVAL_SECONDS
+        value: "15"
+      - key: MAIL_FROM
+        value: Ticket Booking <onboarding@resend.dev>
+      - key: RESEND_API_KEY
+        sync: false # Paste your Resend API key (or leave blank to disable live email).
+      - key: CORS_ORIGIN
+        sync: false # = the ticketing-web URL, e.g. https://ticketing-web.onrender.com
+      - key: APP_BASE_URL
+        sync: false # = the ticketing-web URL (used to build emailed waitlist-offer links)
+
+  # --- React SPA (Vite static build) ---------------------------------------
+  - type: web
+    runtime: static
+    name: ticketing-web
+    buildCommand: npm install && npm run build -w @ticket/web
+    staticPublishPath: packages/web/dist
+    envVars:
+      # Vite inlines these at BUILD time — set them before the web build runs.
+      - key: VITE_API_URL
+        sync: false # = the ticketing-api URL, e.g. https://ticketing-api.onrender.com
+      - key: VITE_SOCKET_URL
+        sync: false # = the ticketing-api URL
+    routes:
+      # SPA fallback so client-side routes (deep links) resolve to index.html.
+      - type: rewrite
+        source: /*
+        destination: /index.html

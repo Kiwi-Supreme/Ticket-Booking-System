@@ -35,5 +35,8 @@ coverage/
 .DS_Store
 Thumbs.db
 
+# Claude Code local (machine-specific) settings — keep launch.json, ignore local perms
+.claude/settings.local.json
+
 # Deliverable artifact
 ticket-booking-source.zip

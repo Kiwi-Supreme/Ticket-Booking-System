@@ -252,6 +252,75 @@ export interface BookingDTO {
   qrDataUrl?: string; // present on booking detail
 }
 
+export interface WaitlistEntryDTO {
+  id: string;
+  showId: string;
+  seatCategoryId: string;
+  categoryName: string;
+  status: WaitlistStatus;
+  /** 1-based position among WAITING entries; null once offered/converted/left. */
+  position: number | null;
+  createdAt: string;
+  /** Present when status is OFFERED and an active offer exists. */
+  offer?: { token: string; expiresAt: string; seatLabel: string } | null;
+}
+
+export interface WaitlistOfferDTO {
+  token: string;
+  status: OfferStatus;
+  expiresAt: string;
+  showId: string;
+  seatLabel: string;
+  categoryName: string;
+  eventTitle: string;
+  venueName: string;
+  startsAt: string;
+}
+
+export interface CategoryReportDTO {
+  seatCategoryId: string;
+  name: string;
+  color: string;
+  price: number;
+  capacity: number;
+  booked: number;
+  available: number;
+  revenue: number;
+  waiting: number;
+}
+
+export interface ShowReportDTO {
+  showId: string;
+  startsAt: string;
+  venueName: string;
+  capacity: number;
+  booked: number;
+  revenue: number;
+  categories: CategoryReportDTO[];
+}
+
+export interface EventSummaryDTO {
+  eventId: string;
+  title: string;
+  totalRevenue: number;
+  totalBooked: number;
+  totalCapacity: number;
+  shows: ShowReportDTO[];
+}
+
+/** Result of scanning/verifying a ticket QR at the gate. */
+export interface TicketVerifyDTO {
+  valid: boolean;
+  reason?: string;
+  reference?: string;
+  status?: BookingStatus;
+  eventTitle?: string;
+  venueName?: string;
+  startsAt?: string;
+  customerName?: string;
+  seats?: string[];
+}
+
 export interface ApiError {
   error: string;
   details?: unknown;
