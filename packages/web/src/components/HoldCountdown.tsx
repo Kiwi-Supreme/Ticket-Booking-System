@@ -39,7 +39,7 @@ export function HoldCountdown({
     <span
       className={clsx(
         'font-mono font-semibold tabular-nums',
-        danger ? 'text-rose-600' : 'text-slate-800',
+        danger ? 'text-rose-bright' : 'text-brass-bright',
         className,
       )}
     >

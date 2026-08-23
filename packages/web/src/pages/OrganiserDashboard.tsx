@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { EventType } from '@ticket/shared';
 import { eventsApi } from '../api/endpoints';
 import { queryKeys } from '../lib/queryKeys';
 import { Alert, Badge, Button, Card, EmptyState, Loading, PageTitle } from '../components/ui';
-
-const typeLabel: Record<string, string> = { MOVIE: '🎬 Movie', CONCERT: '🎵 Concert' };
+import { FilmIcon, MusicIcon, PlusIcon } from '../components/icons';
 
 export default function OrganiserDashboard() {
   const query = useQuery({ queryKey: queryKeys.myEvents, queryFn: () => eventsApi.mine() });
@@ -16,7 +16,9 @@ export default function OrganiserDashboard() {
         subtitle="Create events, schedule shows, and track revenue."
         right={
           <Link to="/organiser/events/new">
-            <Button>+ New event</Button>
+            <Button>
+              <PlusIcon size={17} /> New event
+            </Button>
           </Link>
         }
       />
@@ -26,17 +28,30 @@ export default function OrganiserDashboard() {
       ) : query.isError ? (
         <Alert tone="error">Couldn’t load your events.</Alert>
       ) : (query.data ?? []).length === 0 ? (
-        <EmptyState title="No events yet">Create your first event to start scheduling shows.</EmptyState>
+        <EmptyState
+          title="No events yet"
+          icon={<FilmIcon size={22} />}
+          action={
+            <Link to="/organiser/events/new">
+              <Button>Create your first event</Button>
+            </Link>
+          }
+        >
+          Create an event, then schedule shows and watch bookings roll in.
+        </EmptyState>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
           {query.data!.map((e) => (
-            <Card key={e.id} className="flex flex-col p-4">
+            <Card key={e.id} className="flex flex-col p-5">
               <div className="mb-2 flex items-center gap-2">
-                <Badge>{typeLabel[e.type] ?? e.type}</Badge>
-                {e.genre && <Badge>{e.genre}</Badge>}
+                <Badge tone="brass">
+                  {e.type === EventType.CONCERT ? <MusicIcon size={13} /> : <FilmIcon size={13} />}
+                  {e.type === EventType.CONCERT ? 'Concert' : 'Movie'}
+                </Badge>
+                {e.genre && <Badge tone="neutral">{e.genre}</Badge>}
               </div>
-              <h3 className="font-semibold text-slate-900">{e.title}</h3>
-              <p className="mt-1 text-sm text-slate-500">
+              <h3 className="font-display text-lg font-semibold text-cream">{e.title}</h3>
+              <p className="mt-1 text-sm text-cream-muted">
                 {e.showCount} show{e.showCount === 1 ? '' : 's'}
               </p>
               <div className="mt-4 flex gap-2">

@@ -80,7 +80,7 @@ export function SeatLayoutEditor({
 
       <div className="space-y-3">
         {sections.map((section, i) => (
-          <div key={i} className="grid grid-cols-1 gap-3 rounded-lg border border-slate-200 p-3 sm:grid-cols-[1fr_1fr_auto_auto]">
+          <div key={i} className="grid grid-cols-1 gap-3 rounded-xl border border-ink-600 bg-ink-900/40 p-3 sm:grid-cols-[1fr_1fr_auto_auto]">
             <div>
               <Label>Category</Label>
               <Select
@@ -134,7 +134,7 @@ export function SeatLayoutEditor({
         <Button type="button" variant="secondary" size="sm" onClick={addSection} disabled={disabled}>
           + Add section
         </Button>
-        <span className="text-sm text-slate-500">{totalSeats} seats total</span>
+        <span className="text-sm text-cream-muted">{totalSeats} seats total</span>
       </div>
 
       <Button type="button" className="w-full" onClick={submit} loading={pending} disabled={disabled}>

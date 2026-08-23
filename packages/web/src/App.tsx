@@ -2,6 +2,7 @@ import { Route, Routes } from 'react-router-dom';
 import { Role } from '@ticket/shared';
 import { Layout } from './components/Layout';
 import { RequireAuth } from './auth/RoleGuard';
+import Home from './pages/Home';
 import Browse from './pages/Browse';
 import EventDetail from './pages/EventDetail';
 import SeatSelection from './pages/SeatSelection';
@@ -26,7 +27,8 @@ export default function App() {
     <Routes>
       <Route element={<Layout />}>
         {/* Public browse & booking entry points */}
-        <Route index element={<Browse />} />
+        <Route index element={<Home />} />
+        <Route path="browse" element={<Browse />} />
         <Route path="events/:id" element={<EventDetail />} />
         <Route path="shows/:id" element={<SeatSelection />} />
         <Route path="login" element={<Login />} />

@@ -5,49 +5,57 @@ import { ticketsApi } from '../api/endpoints';
 import { apiErrorMessage } from '../lib/api';
 import { formatDateTime } from '../lib/format';
 import { Alert, Badge, Button, Card, Field, PageTitle, Textarea } from '../components/ui';
+import { CheckCircleIcon, XIcon } from '../components/icons';
 
 function Result({ result }: { result: TicketVerifyDTO }) {
+  const ok = result.valid;
   return (
-    <Card className={result.valid ? 'border-emerald-300 p-5' : 'border-rose-300 p-5'}>
-      <div className="mb-3 flex items-center gap-2">
-        <span className={`text-2xl ${result.valid ? 'text-emerald-600' : 'text-rose-600'}`}>
-          {result.valid ? '✓' : '✗'}
+    <Card className={ok ? 'border-success/50 p-5' : 'border-rose/50 p-5'}>
+      <div className="mb-3 flex items-center gap-2.5">
+        <span
+          className={`grid h-9 w-9 place-items-center rounded-full ${
+            ok ? 'bg-success/15 text-success' : 'bg-rose/15 text-rose-bright'
+          }`}
+        >
+          {ok ? <CheckCircleIcon size={20} /> : <XIcon size={20} />}
         </span>
-        <span className={`text-lg font-bold ${result.valid ? 'text-emerald-700' : 'text-rose-700'}`}>
-          {result.valid ? 'Valid ticket' : 'Not valid'}
+        <span className={`font-display text-lg font-semibold ${ok ? 'text-success' : 'text-rose-bright'}`}>
+          {ok ? 'Valid ticket' : 'Not valid'}
         </span>
       </div>
-      {result.reason && <p className="mb-3 text-sm text-slate-600">{result.reason}</p>}
+      {result.reason && <p className="mb-3 text-sm text-cream-muted">{result.reason}</p>}
       {result.reference && (
-        <dl className="space-y-1 text-sm">
-          <div className="flex justify-between">
-            <dt className="text-slate-500">Reference</dt>
-            <dd className="font-mono text-slate-800">{result.reference}</dd>
+        <dl className="space-y-1.5 text-sm">
+          <div className="flex justify-between gap-4">
+            <dt className="text-cream-dim">Reference</dt>
+            <dd className="font-mono text-cream">{result.reference}</dd>
           </div>
           {result.eventTitle && (
-            <div className="flex justify-between">
-              <dt className="text-slate-500">Event</dt>
-              <dd className="text-slate-800">{result.eventTitle}</dd>
+            <div className="flex justify-between gap-4">
+              <dt className="text-cream-dim">Event</dt>
+              <dd className="text-cream">{result.eventTitle}</dd>
             </div>
           )}
           {result.startsAt && (
-            <div className="flex justify-between">
-              <dt className="text-slate-500">Showtime</dt>
-              <dd className="text-slate-800">{formatDateTime(result.startsAt)}</dd>
+            <div className="flex justify-between gap-4">
+              <dt className="text-cream-dim">Showtime</dt>
+              <dd className="text-cream">{formatDateTime(result.startsAt)}</dd>
             </div>
           )}
           {result.customerName && (
-            <div className="flex justify-between">
-              <dt className="text-slate-500">Customer</dt>
-              <dd className="text-slate-800">{result.customerName}</dd>
+            <div className="flex justify-between gap-4">
+              <dt className="text-cream-dim">Customer</dt>
+              <dd className="text-cream">{result.customerName}</dd>
             </div>
           )}
           {result.seats && result.seats.length > 0 && (
-            <div className="flex items-center justify-between">
-              <dt className="text-slate-500">Seats</dt>
+            <div className="flex items-center justify-between gap-4">
+              <dt className="text-cream-dim">Seats</dt>
               <dd className="flex flex-wrap justify-end gap-1">
                 {result.seats.map((s) => (
-                  <Badge key={s}>{s}</Badge>
+                  <Badge key={s} tone="brass">
+                    {s}
+                  </Badge>
                 ))}
               </dd>
             </div>

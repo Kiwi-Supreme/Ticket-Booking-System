@@ -42,7 +42,15 @@ export function useShowSocket(showId: string | undefined): void {
     if (!showId) return;
 
     const socket: Socket = io(SOCKET_URL, { transports: ['websocket', 'polling'] });
-    socket.emit(SocketEvents.JOIN_SHOW, showId);
+
+    // (Re)join the room and resync on every connection. After a reconnect we
+    // may have missed seat events, so we refetch the authoritative seat map
+    // rather than trusting our now-stale cache.
+    const onConnect = () => {
+      socket.emit(SocketEvents.JOIN_SHOW, showId);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.seatMap(showId) });
+    };
+    socket.on('connect', onConnect);
 
     const applyStatus = (status: SeatStatus) => (payload: SeatUpdatePayload) => {
       if (payload.showId !== showId) return;
@@ -58,6 +66,7 @@ export function useShowSocket(showId: string | undefined): void {
 
     return () => {
       socket.emit(SocketEvents.LEAVE_SHOW, showId);
+      socket.off('connect', onConnect);
       socket.disconnect();
     };
   }, [showId, queryClient]);

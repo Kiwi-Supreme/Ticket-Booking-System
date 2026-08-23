@@ -4,7 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import { EventType } from '@ticket/shared';
 import { eventsApi } from '../api/endpoints';
 import { apiErrorMessage } from '../lib/api';
-import { Alert, Button, Card, Field, Input, PageTitle, Select, Textarea } from '../components/ui';
+import { Alert, Button, Card, Field, Input, PageTitle, SegmentedControl, Textarea } from '../components/ui';
 
 export default function CreateEvent() {
   const navigate = useNavigate();
@@ -34,14 +34,18 @@ export default function CreateEvent() {
       <Card className="p-6">
         <form onSubmit={submit} className="space-y-4">
           {error && <Alert tone="error">{error}</Alert>}
+          <Field label="Type" htmlFor="type">
+            <SegmentedControl<EventType>
+              value={type}
+              onChange={setType}
+              options={[
+                { value: EventType.MOVIE, label: 'Movie' },
+                { value: EventType.CONCERT, label: 'Concert' },
+              ]}
+            />
+          </Field>
           <Field label="Title" htmlFor="title">
             <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required />
-          </Field>
-          <Field label="Type" htmlFor="type">
-            <Select id="type" value={type} onChange={(e) => setType(e.target.value as EventType)}>
-              <option value={EventType.MOVIE}>Movie</option>
-              <option value={EventType.CONCERT}>Concert</option>
-            </Select>
           </Field>
           <Field label="Genre" htmlFor="genre">
             <Input
@@ -64,7 +68,7 @@ export default function CreateEvent() {
             <Textarea id="desc" rows={4} value={description} onChange={(e) => setDescription(e.target.value)} />
           </Field>
           <Button type="submit" className="w-full" loading={mutation.isPending}>
-            Create event & add show
+            Create event &amp; add show
           </Button>
         </form>
       </Card>

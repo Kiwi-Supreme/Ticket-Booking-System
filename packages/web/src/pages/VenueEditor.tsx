@@ -8,6 +8,7 @@ import { apiErrorMessage } from '../lib/api';
 import type { VenueSeatModel } from '../api/types';
 import { SeatLayoutEditor } from '../components/SeatLayoutEditor';
 import { Alert, Badge, Button, Card, Input, Label, Loading, PageTitle } from '../components/ui';
+import { ChevronLeftIcon } from '../components/icons';
 
 function LayoutPreview({ seats }: { seats: VenueSeatModel[] }) {
   const rows = useMemo(() => {
@@ -23,7 +24,7 @@ function LayoutPreview({ seats }: { seats: VenueSeatModel[] }) {
   }, [seats]);
 
   if (seats.length === 0) {
-    return <p className="text-sm text-slate-500">No seats generated yet.</p>;
+    return <p className="text-sm text-cream-muted">No seats generated yet.</p>;
   }
 
   return (
@@ -31,13 +32,13 @@ function LayoutPreview({ seats }: { seats: VenueSeatModel[] }) {
       <div className="space-y-1.5">
         {rows.map((row) => (
           <div key={row[0].gridRow} className="flex items-center gap-1.5">
-            <span className="w-5 text-right text-xs font-medium text-slate-400">{row[0].rowLabel}</span>
+            <span className="w-5 text-right font-mono text-xs text-cream-dim">{row[0].rowLabel}</span>
             <div className="flex gap-1">
               {row.map((seat) => (
                 <span
                   key={seat.id}
                   title={`${seat.rowLabel}${seat.colNumber} · ${seat.category.name}`}
-                  className="h-5 w-5 rounded-sm"
+                  className="h-5 w-5 rounded-sm border border-white/10"
                   style={{ backgroundColor: seat.category.color }}
                 />
               ))}
@@ -54,7 +55,7 @@ export default function VenueEditor() {
   const queryClient = useQueryClient();
 
   const [catName, setCatName] = useState('');
-  const [catColor, setCatColor] = useState('#6366f1');
+  const [catColor, setCatColor] = useState('#E0A44A');
   const [genError, setGenError] = useState<string | null>(null);
 
   const query = useQuery({
@@ -99,16 +100,23 @@ export default function VenueEditor() {
       <PageTitle
         title={venue.name}
         subtitle={venue.address}
-        right={<Link to="/admin/venues" className="text-sm text-brand hover:underline">← All venues</Link>}
+        right={
+          <Link
+            to="/admin/venues"
+            className="inline-flex items-center gap-1 text-sm text-cream-muted transition-colors hover:text-brass"
+          >
+            <ChevronLeftIcon size={16} /> All venues
+          </Link>
+        }
       />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="space-y-6">
           <Card className="p-5">
-            <h2 className="mb-3 font-semibold text-slate-800">Seat categories</h2>
+            <h2 className="mb-3 font-display text-lg font-semibold text-cream">Seat categories</h2>
             <div className="mb-4 flex flex-wrap gap-1.5">
               {venue.categories.length === 0 ? (
-                <p className="text-sm text-slate-500">None yet.</p>
+                <p className="text-sm text-cream-muted">None yet.</p>
               ) : (
                 venue.categories.map((c) => (
                   <Badge key={c.id} color={c.color}>
@@ -133,7 +141,7 @@ export default function VenueEditor() {
                 aria-label="Category colour"
                 value={catColor}
                 onChange={(e) => setCatColor(e.target.value)}
-                className="h-10 w-12 cursor-pointer rounded border border-slate-300"
+                className="h-10 w-12 cursor-pointer rounded-lg border border-ink-600 bg-ink-800"
               />
               <Button type="submit" loading={categoryMutation.isPending}>
                 Add
@@ -142,7 +150,7 @@ export default function VenueEditor() {
           </Card>
 
           <Card className="p-5">
-            <h2 className="mb-3 font-semibold text-slate-800">Generate seat layout</h2>
+            <h2 className="mb-3 font-display text-lg font-semibold text-cream">Generate seat layout</h2>
             {genError && (
               <div className="mb-3">
                 <Alert tone="error">{genError}</Alert>
@@ -157,8 +165,9 @@ export default function VenueEditor() {
         </div>
 
         <Card className="p-5">
-          <h2 className="mb-3 font-semibold text-slate-800">
-            Current layout <span className="text-sm font-normal text-slate-400">({venue.seats.length} seats)</span>
+          <h2 className="mb-3 font-display text-lg font-semibold text-cream">
+            Current layout{' '}
+            <span className="text-sm font-normal text-cream-dim">({venue.seats.length} seats)</span>
           </h2>
           <LayoutPreview seats={venue.seats} />
         </Card>

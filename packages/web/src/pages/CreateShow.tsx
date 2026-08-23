@@ -100,12 +100,15 @@ export default function CreateShow() {
                 <div className="space-y-2">
                   {venue.categories.map((c) => (
                     <div key={c.id} className="flex items-center gap-3">
-                      <span className="flex flex-1 items-center gap-2 text-sm text-slate-700">
-                        <span className="h-3.5 w-3.5 rounded-sm" style={{ backgroundColor: c.color }} />
+                      <span className="flex flex-1 items-center gap-2 text-sm text-cream-muted">
+                        <span
+                          className="h-3.5 w-3.5 rounded-sm border border-white/10"
+                          style={{ backgroundColor: c.color }}
+                        />
                         {c.name}
                       </span>
                       <div className="relative w-40">
-                        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-cream-dim">
                           ₹
                         </span>
                         <Input

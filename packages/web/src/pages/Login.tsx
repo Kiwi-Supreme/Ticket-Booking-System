@@ -8,12 +8,6 @@ interface LocationState {
   from?: { pathname: string };
 }
 
-const demoAccounts = [
-  ['Customer', 'alice@ticket.dev'],
-  ['Organiser', 'organiser@ticket.dev'],
-  ['Admin', 'admin@ticket.dev'],
-];
-
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -33,18 +27,24 @@ export default function Login() {
       await login({ email, password });
       navigate(dest, { replace: true });
     } catch (err) {
-      setError(apiErrorMessage(err, 'Login failed'));
+      setError(apiErrorMessage(err, 'Login failed. Please check your details and try again.'));
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="mx-auto max-w-md">
-      <Card className="p-6">
-        <h1 className="mb-1 text-xl font-bold text-slate-900">Welcome back</h1>
-        <p className="mb-6 text-sm text-slate-500">Log in to book seats and manage your tickets.</p>
+    <div className="mx-auto max-w-md py-6">
+      <div className="mb-6 text-center">
+        <h1 className="font-display text-3xl font-semibold tracking-tight text-cream">
+          Welcome back
+        </h1>
+        <p className="mt-2 text-sm text-cream-muted">
+          Log in to book seats and manage your tickets.
+        </p>
+      </div>
 
+      <Card className="p-6 sm:p-8">
         <form onSubmit={submit} className="space-y-4">
           {error && <Alert tone="error">{error}</Alert>}
           <Field label="Email" htmlFor="email">
@@ -53,6 +53,7 @@ export default function Login() {
               type="email"
               value={email}
               autoComplete="email"
+              autoFocus
               onChange={(e) => setEmail(e.target.value)}
               required
             />
@@ -67,39 +68,18 @@ export default function Login() {
               required
             />
           </Field>
-          <Button type="submit" className="w-full" loading={submitting}>
+          <Button type="submit" size="lg" className="w-full" loading={submitting}>
             Log in
           </Button>
         </form>
-
-        <p className="mt-4 text-center text-sm text-slate-500">
-          No account?{' '}
-          <Link to="/register" className="font-medium text-brand hover:underline">
-            Sign up
-          </Link>
-        </p>
       </Card>
 
-      <div className="mt-4 rounded-lg border border-slate-200 bg-white p-4 text-xs text-slate-500">
-        <p className="mb-2 font-medium text-slate-600">Demo accounts (password: password123)</p>
-        <ul className="space-y-1">
-          {demoAccounts.map(([role, mail]) => (
-            <li key={mail} className="flex justify-between">
-              <span>{role}</span>
-              <button
-                type="button"
-                className="font-mono text-brand hover:underline"
-                onClick={() => {
-                  setEmail(mail);
-                  setPassword('password123');
-                }}
-              >
-                {mail}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
+      <p className="mt-5 text-center text-sm text-cream-muted">
+        New here?{' '}
+        <Link to="/register" className="font-medium text-brass transition-colors hover:text-brass-bright">
+          Create an account
+        </Link>
+      </p>
     </div>
   );
 }

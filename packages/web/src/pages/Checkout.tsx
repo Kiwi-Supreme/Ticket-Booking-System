@@ -5,18 +5,20 @@ import { bookingsApi, holdsApi } from '../api/endpoints';
 import type { CheckoutState } from '../api/types';
 import { queryKeys } from '../lib/queryKeys';
 import { apiErrorMessage } from '../lib/api';
-import { formatDateTime, formatMoney } from '../lib/format';
+import { formatDateTime, formatMoney, formatTime } from '../lib/format';
+import { useToast } from '../components/toast';
 import { HoldCountdown } from '../components/HoldCountdown';
-import { Alert, Button, Card, PageTitle } from '../components/ui';
+import { Alert, Badge, Button, Card, TicketPerforation } from '../components/ui';
+import { ChevronLeftIcon, ClockIcon, MailIcon, MapPinIcon } from '../components/icons';
 
 export default function Checkout() {
   const location = useLocation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const toast = useToast();
   const state = location.state as CheckoutState | null;
 
   const [expired, setExpired] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const confirmMutation = useMutation({
     mutationFn: () => bookingsApi.create(state!.hold.id),
@@ -25,7 +27,7 @@ export default function Checkout() {
       void queryClient.invalidateQueries({ queryKey: queryKeys.seatMap(state!.show.id) });
       navigate(`/bookings/${booking.reference}`, { replace: true, state: { justBooked: true } });
     },
-    onError: (err) => setError(apiErrorMessage(err, 'Could not confirm the booking.')),
+    onError: (err) => toast.error(apiErrorMessage(err, 'Could not confirm the booking.')),
   });
 
   const releaseMutation = useMutation({
@@ -34,6 +36,7 @@ export default function Checkout() {
       void queryClient.invalidateQueries({ queryKey: queryKeys.seatMap(state!.show.id) });
       navigate(`/shows/${state!.show.id}`, { replace: true });
     },
+    onError: (err) => toast.error(apiErrorMessage(err, 'Could not release the seats.')),
   });
 
   // A hold can't be re-fetched by id, so a page refresh loses the flow.
@@ -42,79 +45,108 @@ export default function Checkout() {
   const { hold, seats, show } = state;
 
   return (
-    <div className="mx-auto max-w-2xl">
-      <PageTitle title="Checkout" subtitle={show.title} />
+    <div className="mx-auto max-w-xl">
+      <Link
+        to={`/shows/${show.id}`}
+        className="mb-3 inline-flex items-center gap-1 text-sm text-cream-muted transition-colors hover:text-brass"
+      >
+        <ChevronLeftIcon size={16} /> Back to seats
+      </Link>
+      <h1 className="mb-5 font-display text-2xl font-semibold tracking-tight text-cream sm:text-3xl">
+        Review &amp; confirm
+      </h1>
 
-      <Card className="p-6">
-        <div className="mb-4 flex items-center justify-between rounded-lg bg-slate-50 px-4 py-3">
-          <div className="text-sm text-slate-600">
-            <p className="font-medium text-slate-800">{formatDateTime(show.startsAt)}</p>
-            <p>{show.venueName}</p>
-          </div>
-          <div className="text-right">
-            <p className="text-xs text-slate-500">Held for</p>
-            {expired ? (
-              <span className="font-mono font-semibold text-rose-600">00:00</span>
-            ) : (
-              <HoldCountdown expiresAt={hold.expiresAt} onExpire={() => setExpired(true)} />
-            )}
-          </div>
+      <Card className="overflow-hidden p-0">
+        {/* Upper stub — what & when */}
+        <div className="p-5 sm:p-6">
+          <h2 className="font-display text-xl font-semibold text-cream">{show.title}</h2>
+          <p className="mt-2 flex items-center gap-1.5 text-sm text-cream-muted">
+            <ClockIcon size={15} className="text-cream-dim" />
+            {formatDateTime(show.startsAt)}
+          </p>
+          <p className="mt-1 flex items-center gap-1.5 text-sm text-cream-muted">
+            <MapPinIcon size={15} className="text-cream-dim" />
+            {show.venueName}
+          </p>
+
+          {!expired && (
+            <div className="mt-4 flex items-center justify-between rounded-xl border border-brass/30 bg-brass/10 px-4 py-3">
+              <div className="text-sm">
+                <p className="font-medium text-brass-bright">Reserved for you</p>
+                <p className="text-cream-dim">Held until {formatTime(hold.expiresAt)}</p>
+              </div>
+              <div className="text-right">
+                <HoldCountdown
+                  expiresAt={hold.expiresAt}
+                  onExpire={() => setExpired(true)}
+                  className="text-xl"
+                />
+                <p className="text-[11px] uppercase tracking-wide text-cream-dim">remaining</p>
+              </div>
+            </div>
+          )}
         </div>
 
-        <table className="w-full text-sm">
-          <tbody>
+        <TicketPerforation className="my-0" />
+
+        {/* Lower stub — seats & total */}
+        <div className="p-5 sm:p-6">
+          <p className="mb-3 text-xs font-medium uppercase tracking-wide text-cream-dim">
+            {seats.length} seat{seats.length === 1 ? '' : 's'}
+          </p>
+          <ul className="space-y-2">
             {seats.map((s) => (
-              <tr key={s.id} className="border-b border-slate-100">
-                <td className="py-2 text-slate-600">
-                  Seat {s.label} · {s.categoryName}
-                </td>
-                <td className="py-2 text-right text-slate-800">{formatMoney(s.price)}</td>
-              </tr>
+              <li key={s.id} className="flex items-center justify-between gap-2 text-sm">
+                <span className="flex items-center gap-2">
+                  <span className="font-mono text-cream">{s.label}</span>
+                  <Badge tone="neutral">{s.categoryName}</Badge>
+                </span>
+                <span className="text-cream">{formatMoney(s.price)}</span>
+              </li>
             ))}
-          </tbody>
-          <tfoot>
-            <tr>
-              <td className="pt-3 font-semibold text-slate-900">Total</td>
-              <td className="pt-3 text-right font-semibold text-slate-900">
-                {formatMoney(hold.totalAmount)}
-              </td>
-            </tr>
-          </tfoot>
-        </table>
+          </ul>
 
-        <div className="mt-6 space-y-3">
-          {error && <Alert tone="error">{error}</Alert>}
+          <div className="mt-4 flex items-center justify-between border-t border-ink-600 pt-4">
+            <span className="font-semibold text-cream">Total</span>
+            <span className="font-display text-xl font-semibold text-brass-bright">
+              {formatMoney(hold.totalAmount)}
+            </span>
+          </div>
 
-          {expired ? (
-            <Alert tone="warning">
-              Your hold expired and the seats were released.{' '}
-              <Link to={`/shows/${show.id}`} className="font-medium underline">
-                Pick seats again
-              </Link>
-              .
-            </Alert>
-          ) : (
-            <>
-              <p className="text-center text-xs text-slate-400">
-                Payment is simulated for this demo — confirming books instantly and emails your QR ticket.
-              </p>
-              <Button
-                className="w-full"
-                loading={confirmMutation.isPending}
-                onClick={() => confirmMutation.mutate()}
-              >
-                Confirm booking · {formatMoney(hold.totalAmount)}
-              </Button>
-              <Button
-                variant="ghost"
-                className="w-full"
-                loading={releaseMutation.isPending}
-                onClick={() => releaseMutation.mutate()}
-              >
-                Cancel & release seats
-              </Button>
-            </>
-          )}
+          <div className="mt-6 space-y-3">
+            {expired ? (
+              <Alert tone="warning" title="Your hold expired">
+                The seats have been released.{' '}
+                <Link to={`/shows/${show.id}`} className="font-medium underline">
+                  Pick seats again
+                </Link>
+                .
+              </Alert>
+            ) : (
+              <>
+                <Button
+                  className="w-full"
+                  size="lg"
+                  loading={confirmMutation.isPending}
+                  onClick={() => confirmMutation.mutate()}
+                >
+                  Confirm booking · {formatMoney(hold.totalAmount)}
+                </Button>
+                <p className="flex items-center justify-center gap-1.5 text-center text-xs text-cream-dim">
+                  <MailIcon size={14} />
+                  Your ticket and QR code are emailed the moment you confirm.
+                </p>
+                <Button
+                  variant="ghost"
+                  className="w-full"
+                  loading={releaseMutation.isPending}
+                  onClick={() => releaseMutation.mutate()}
+                >
+                  Release seats &amp; go back
+                </Button>
+              </>
+            )}
+          </div>
         </div>
       </Card>
     </div>
