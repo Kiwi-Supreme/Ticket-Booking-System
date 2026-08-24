@@ -24,7 +24,7 @@ services:
     name: ticketing-api
     runtime: node
     plan: free
-    buildCommand: npm install && npm run db:generate && npm run build -w @ticket/api
+    buildCommand: npm install --include=dev && npm run build -w @ticket/api
     # Apply any pending migrations, then boot. `migrate deploy` is idempotent.
     startCommand: npm run db:deploy && npm run start
     healthCheckPath: /api/health
@@ -56,7 +56,7 @@ services:
   - type: web
     runtime: static
     name: ticketing-web
-    buildCommand: npm install && npm run build -w @ticket/web
+    buildCommand: npm install --include=dev && npm run build -w @ticket/web
     staticPublishPath: packages/web/dist
     envVars:
       # Vite inlines these at BUILD time — set them before the web build runs.
