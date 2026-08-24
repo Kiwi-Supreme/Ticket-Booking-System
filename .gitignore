@@ -9,12 +9,23 @@ build/
 packages/web/dist/
 packages/api/dist/
 
-# Environment
+# Environment / secrets — ignore EVERY env file; keep only the committed *.example templates
 .env
-.env.local
-.env.*.local
-packages/api/.env
-packages/web/.env
+.env.*
+!.env.example
+*.local
+
+# Secret material — keys, certs, credentials. Never commit these.
+*.pem
+*.key
+*.pfx
+*.p12
+*.keystore
+id_rsa*
+*.crt
+secrets.json
+credentials.json
+service-account*.json
 
 # Prisma
 packages/api/prisma/*.db
