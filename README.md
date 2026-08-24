@@ -1,5 +1,5 @@
-# Ticket Booking System
- 
+# 🎟️ Ticket Booking System
+
 A full-stack ticket-booking platform for **movies and concerts** with seat-level
 inventory, concurrency-safe holds, a time-limited waitlist offer flow, live seat
 maps, and QR-code tickets delivered by email.
@@ -133,7 +133,7 @@ Full reference in **[.env.example](.env.example)**. Summary:
 |---|---|---|
 | `DATABASE_URL` | `postgresql://ticket:ticket@localhost:5433/ticketing?schema=public` | PostgreSQL connection |
 | `PORT` | `4000` | API HTTP port |
-| `JWT_SECRET` | `dev-secret-change-me` | Signs auth **and** QR ticket tokens — set a strong value in prod |
+| `JWT_SECRET` | `change-me-to-a-long-random-secret` | Signs auth **and** QR ticket tokens — set a strong value in prod |
 | `CORS_ORIGIN` | `http://localhost:5173` | Allowed web origin(s), comma-separated |
 | `APP_BASE_URL` | `http://localhost:5173` | Web base URL used to build emailed offer links |
 | `HOLD_TTL_SECONDS` | `600` | Seat-hold lifetime |
@@ -303,6 +303,29 @@ run against a PostgreSQL instance (`DATABASE_URL`); start docker-compose first.
 
 ---
 
+## Secret hygiene
+
+Real credentials never belong in the repo. Two safeguards keep them out:
+
+- **`.gitignore`** ignores every `.env` variant (`.env`, `.env.*`) plus key/cert
+  material — only the redacted `*.example` templates are tracked. Your real
+  `packages/api/.env` stays on your machine.
+- A **pre-commit guard** ([`scripts/git-hooks/pre-commit`](scripts/git-hooks/pre-commit))
+  refuses to commit a real `.env` file and scans staged changes for live-looking
+  tokens (Resend / OpenAI / GitHub / AWS / Slack keys, private-key blocks, JWTs).
+  Override a false positive with `git commit --no-verify`.
+
+Git does **not** clone `.git/hooks/`, so re-install the guard after cloning:
+
+```bash
+cp scripts/git-hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+```
+
+In production, set secrets as **environment variables in your host's dashboard**
+(Render / Railway) — never in a committed file.
+
+---
+
 ## Deploying to Render
 
 This is a **deploy guide + blueprint** — you run it under your own Render account
@@ -336,6 +359,7 @@ and keys; nothing here is auto-deployed.
 | `npm run dev` | API + web together (concurrently) |
 | `npm run build` | Build API (tsup) + web (vite) |
 | `npm start` | Start built API |
+| `npm run db:generate` | `prisma generate` (regenerate the Prisma client) |
 | `npm run db:migrate` | `prisma migrate dev` (create/apply migrations) |
 | `npm run db:deploy` | `prisma migrate deploy` (apply committed migrations) |
 | `npm run db:seed` | Load demo data |
@@ -353,6 +377,3 @@ and keys; nothing here is auto-deployed.
 - Admins are **seeded**, not self-registerable; customers and organisers self-register.
 - The TTL sweeper is in-process (fine for one always-on instance); see the `pg_cron`
   note above for horizontal scale.
-#   T i c k e t - B o o k i n g - S y s t e m 
- 
- 
