@@ -1,5 +1,5 @@
-# 🎟️ Ticket Booking System
-
+# Ticket Booking System
+ 
 A full-stack ticket-booking platform for **movies and concerts** with seat-level
 inventory, concurrency-safe holds, a time-limited waitlist offer flow, live seat
 maps, and QR-code tickets delivered by email.
@@ -353,5 +353,6 @@ and keys; nothing here is auto-deployed.
 - Admins are **seeded**, not self-registerable; customers and organisers self-register.
 - The TTL sweeper is in-process (fine for one always-on instance); see the `pg_cron`
   note above for horizontal scale.
-#   T i c k e t - B o o k i n g - S y s t e m  
+#   T i c k e t - B o o k i n g - S y s t e m 
+ 
  
